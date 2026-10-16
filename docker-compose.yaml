@@ -1,0 +1,57 @@
+services:
+    bomdkpam68g4hq8x7b8j0nxn-220624829023:
+        image: 'bomdkpam68g4hq8x7b8j0nxn:4a8733e387cdf53f01197cd476e8082ed1020a01'
+        container_name: bomdkpam68g4hq8x7b8j0nxn-220624829023
+        restart: unless-stopped
+        expose:
+            - '80'
+        networks:
+            coolify:
+                aliases:
+                    - bomdkpam68g4hq8x7b8j0nxn-220624829023
+        mem_limit: '0'
+        memswap_limit: '0'
+        mem_swappiness: 60
+        mem_reservation: '0'
+        cpus: 0.0
+        cpu_shares: 1024
+        env_file:
+            - .env
+        labels:
+            - traefik.enable=true
+            - traefik.http.middlewares.gzip.compress=true
+            - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+            - traefik.http.routers.http-0-bomdkpam68g4hq8x7b8j0nxn.entryPoints=http
+            - traefik.http.routers.http-0-bomdkpam68g4hq8x7b8j0nxn.middlewares=redirect-to-https
+            - 'traefik.http.routers.http-0-bomdkpam68g4hq8x7b8j0nxn.rule=Host(`easy-point.tech`) && PathPrefix(`/`)'
+            - traefik.http.routers.http-0-bomdkpam68g4hq8x7b8j0nxn.service=http-0-bomdkpam68g4hq8x7b8j0nxn
+            - traefik.http.routers.https-0-bomdkpam68g4hq8x7b8j0nxn.entryPoints=https
+            - traefik.http.routers.https-0-bomdkpam68g4hq8x7b8j0nxn.middlewares=gzip
+            - 'traefik.http.routers.https-0-bomdkpam68g4hq8x7b8j0nxn.rule=Host(`easy-point.tech`) && PathPrefix(`/`)'
+            - traefik.http.routers.https-0-bomdkpam68g4hq8x7b8j0nxn.service=https-0-bomdkpam68g4hq8x7b8j0nxn
+            - traefik.http.routers.https-0-bomdkpam68g4hq8x7b8j0nxn.tls.certresolver=letsencrypt
+            - traefik.http.routers.https-0-bomdkpam68g4hq8x7b8j0nxn.tls=true
+            - traefik.http.services.http-0-bomdkpam68g4hq8x7b8j0nxn.loadbalancer.server.port=80
+            - traefik.http.services.https-0-bomdkpam68g4hq8x7b8j0nxn.loadbalancer.server.port=80
+            - 'caddy_0.encode=zstd gzip'
+            - 'caddy_0.handle_path.0_reverse_proxy={{upstreams 80}}'
+            - 'caddy_0.handle_path=/*'
+            - caddy_0.header=-Server
+            - 'caddy_0.try_files={path} /index.html /index.php'
+            - 'caddy_0=https://easy-point.tech'
+            - caddy_ingress_network=coolify
+            - coolify.managed=true
+            - coolify.version=4.0.0
+            - coolify.applicationId=7
+            - coolify.type=application
+            - coolify.name=bomdkpam68g4hq8x7b8j0nxn
+            - coolify.resourceName=easypoint-webmain-bomdkpam68g4hq8x7b8j0nxn
+            - coolify.projectName=easypoint
+            - coolify.serviceName=easypoint-webmain-bomdkpam68g4hq8x7b8j0nxn
+            - coolify.environmentName=production
+            - coolify.pullRequestId=0
+networks:
+    coolify:
+        external: true
+        name: coolify
+        attachable: true

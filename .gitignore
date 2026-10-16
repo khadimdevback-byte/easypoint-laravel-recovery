@@ -1,0 +1,46 @@
+/.phpunit.cache
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+
+.env
+.env.*
+!.env.example
+
+.phpactor.json
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+/.fleet
+/.idea
+/.vscode
+/.zed
+.DS_Store
+**/.DS_Store
+
+# Fichiers temporaires de diagnostic
+/temp_symfony_process_output*.txt
+/temp_symfony_process_test*.php
+
+# Données générées et privées de Laravel
+/storage/logs/*
+!/storage/logs/.gitignore
+/storage/framework/cache/data/*
+!/storage/framework/cache/data/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/app/private/*
+!/storage/app/private/.gitignore
+
+# Fichiers téléversés localement
+/storage/app/public/*
+!/storage/app/public/.gitignore

@@ -1,0 +1,155 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  font-family: "Lato", sans-serif;
+}
+
+.text-primary{
+    color: #008440;
+}
+
+.bg-primary{
+    background-color: #008440;
+}
+
+.bg-primary-2{
+  background-color: #16C09861;
+}
+
+.bg-secondary{
+  background-color: #F7F7F7;
+}
+
+.bg-login-1 {
+    background-image: url("../../public/images/bg-login-1.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    height: 100vh;
+  }
+
+  .bg-loginpana {
+    background-image: url("../../public/images/bgloginpana.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 463.81005859375;
+    height: 463.81005859375;
+    top: 50.82px;
+    left: 602.62px;
+  }
+
+  .bg-login-2 {
+    background-image: url("../../public/images/bg-login-2.png");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    height: 100vh;
+  }
+
+  /* Masquer toutes les barres de défilement dans les navigateurs Webkit (Chrome, Safari, etc.) */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Masquer les barres de défilement dans Firefox */
+html, body {
+  scrollbar-width: none; /* Pour Firefox */
+}
+
+html, body {
+  overflow: auto; /* Autorise le défilement, mais masque les barres de défilement */
+}
+
+.shadow-primary-color {
+  --tw-shadow-color: #008440;
+  --tw-shadow: var(--tw-shadow-colored);
+}
+
+.border-primary-color {
+  --tw-border-opacity: 1;
+  border-color: #008440;
+}
+
+.text-white{
+  color: #FAFFFC !important;
+}
+
+.text-danger{
+  color: #A61100;
+}
+
+.bg-danger{
+  background-color: #A61100;
+}
+
+.bg-danger-2{
+  background-color: #FFC5C5;
+}
+
+.bg-secondary{
+  background-color: #F7F7F7;
+}
+
+
+
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none !important;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+input:-internal-autofill-selected {
+  background-color: inherit !important;
+}
+
+ .btnAside {
+  background-color: #F7F7F7;
+  animation: changeColor 1s ease forwards;
+}
+
+@keyframes changeColor {
+  0% {
+    background-color: #F7F7F7;
+  }
+
+  100% {
+    background-color: #008440;
+    color: #fff;
+  }
+}
+
+#orderTimeChart {
+  height: 270px !important;
+  width: 270px !important;
+}
+
+#ratingChart {
+  height: 270px !important;
+  width: 270px !important;
+}
+
+.fc-event {
+    cursor: pointer;
+}
+
+.fc-event:hover {
+    filter: brightness(0.9);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+button.swal2-confirm.swal2-styled {
+    background-color: #008440;
+}
+
+button.swal2-cancel.swal2-styled {
+    background-color: #d33;
+}
