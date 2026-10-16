@@ -321,11 +321,18 @@ class DashboardController extends Controller
         $userCounts = [$totalSuperAdmin, $totalManager, $totalController, $totalUser, $totalCustomer];
 
         // Récupérer les sociétés créées durant les 12 derniers mois
-        $companies = Company::selectRaw('MONTH(created_at) as month, YEAR(created_at) as year, COUNT(*) as count')
+        $companies = Company::selectRaw("
+                EXTRACT(MONTH FROM created_at) AS month,
+                EXTRACT(YEAR FROM created_at) AS year,
+                COUNT(*) AS count
+            ")
             ->where('created_at', '>=', Carbon::now()->subMonths(12))
-            ->groupBy('year', 'month')
-            ->orderBy('year', 'asc')
-            ->orderBy('month', 'asc')
+            ->groupByRaw("
+                EXTRACT(YEAR FROM created_at),
+                EXTRACT(MONTH FROM created_at)
+            ")
+            ->orderByRaw('EXTRACT(YEAR FROM created_at) ASC')
+            ->orderByRaw('EXTRACT(MONTH FROM created_at) ASC')
             ->get();
 
         // Générer les mois et leurs données correspondantes (Sociétés)

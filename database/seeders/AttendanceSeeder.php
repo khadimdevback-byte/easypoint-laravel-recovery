@@ -4,41 +4,61 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 use Carbon\Carbon;
 
 class AttendanceSeeder extends Seeder
 {
     public function run(): void
     {
-        // 2. User IDs for company_id = 1
-        $userIds = [17, 24]; // Exemple de IDs d'utilisateurs pour l'entreprise 1
+        // Récupérer les utilisateurs existants de l'entreprise 1
+        $userIds = User::where('company_id', 1)
+            ->pluck('id')
+            ->all();
 
-        // 3. Seed Attendances for multiple months
-        $months = [1, 3, 4, 5,10,12]; // Janvier à Mai
+        // Vérifier qu'il existe des utilisateurs
+        if (empty($userIds)) {
+            $this->command->warn(
+                'Aucun utilisateur trouvé pour l’entreprise 1.'
+            );
+
+            return;
+        }
+
+        // Mois pour lesquels générer les pointages
+        $months = [1, 3, 4, 5, 10, 12];
+
         foreach ($months as $month) {
-            foreach ($userIds as $userId) {
-                // Pour chaque mois, générez des pointages pour chaque utilisateur
-                // Générer des pointages pour différents jours du mois
-                for ($day = 1; $day <= 30; $day++) { // Simuler des pointages pour 28 jours
-                    // Générer un temps aléatoire pour l'arrivée et le départ
-                    $arriveeTimestamp = Carbon::create(2024, $month, $day, rand(8, 9), rand(0, 59));
-                    $departTimestamp = Carbon::create(2024, $month, $day, rand(17, 18), rand(0, 59));
+            // Utiliser le nombre réel de jours du mois
+            $daysInMonth = Carbon::create(2024, $month, 1)
+                ->daysInMonth;
 
-                    // Insérer le pointage "arrivee"
+            foreach ($userIds as $userId) {
+                for ($day = 1; $day <= $daysInMonth; $day++) {
+
+                    $arriveeTimestamp = Carbon::create(
+                        2024, $month, $day, rand(8, 9), rand(0, 59)
+                    );
+
+                    $departTimestamp = Carbon::create(
+                        2024, $month, $day, rand(17, 18), rand(0, 59)
+                    );
+
+                    // Pointage d'arrivée
                     DB::table('attendances')->insert([
                         'user_id' => $userId,
                         'company_id' => 1,
-                        'site_id' => 4, // Utiliser l'ID du site créé ci-dessus
+                        'site_id' => 4,
                         'timestamp' => $arriveeTimestamp,
                         'type' => 'arrivee',
                         'created_at' => $arriveeTimestamp,
                     ]);
 
-                    // Insérer le pointage "depart"
+                    // Pointage de départ
                     DB::table('attendances')->insert([
                         'user_id' => $userId,
                         'company_id' => 1,
-                        'site_id' => 4, // Utiliser l'ID du site créé ci-dessus
+                        'site_id' => 4,
                         'timestamp' => $departTimestamp,
                         'type' => 'depart',
                         'created_at' => $departTimestamp,
@@ -46,5 +66,9 @@ class AttendanceSeeder extends Seeder
                 }
             }
         }
+
+        $this->command->info(
+            'Les pointages ont été générés avec succès.'
+        );
     }
 }
