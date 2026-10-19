@@ -1,8 +1,6 @@
 <?php
 
 use Illuminate\Database\Migrations\Migration;
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
@@ -12,10 +10,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('attendances', function (Blueprint $table) {
-            // Attention : cette requête est spécifique à MySQL
-        DB::statement("ALTER TABLE attendances MODIFY type ENUM('arrivee', 'pause', 'reprise','depart')");
-        });
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('ALTER TABLE attendances DROP CONSTRAINT IF EXISTS attendances_type_check');
+            DB::statement("ALTER TABLE attendances ADD CONSTRAINT attendances_type_check CHECK (type IN ('arrivee', 'pause', 'reprise', 'depart'))");
+
+            return;
+        }
+
+        DB::statement("ALTER TABLE attendances MODIFY type ENUM('arrivee', 'pause', 'reprise', 'depart')");
     }
 
     /**
@@ -23,9 +25,15 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('attendances', function (Blueprint $table) {
-            
+        if (DB::getDriverName() === 'pgsql') {
+            DB::table('attendances')->where('type', 'pause')->update(['type' => 'arrivee']);
+            DB::table('attendances')->where('type', 'reprise')->update(['type' => 'depart']);
+            DB::statement('ALTER TABLE attendances DROP CONSTRAINT IF EXISTS attendances_type_check');
+            DB::statement("ALTER TABLE attendances ADD CONSTRAINT attendances_type_check CHECK (type IN ('arrivee', 'depart'))");
+
+            return;
+        }
+
         DB::statement("ALTER TABLE attendances MODIFY type ENUM('arrivee', 'depart')");
-        });
     }
 };
