@@ -125,12 +125,21 @@ public function postuler(Request $request, $id)
     }
 
     // Enregistrer la candidature
-    Candidature::create([
+    $candidature = Candidature::create([
         'user_id' => $user->id,
         'offre_id' => $id,
         'company_id' => $offre->company_id,
         'status' => 'pending',
     ]);
+
+    $recipients = User::where('company_id', $offre->company_id)
+        ->whereIn('user_type', ['admin', 'manager'])
+        ->get();
+
+    Notification::send(
+        $recipients,
+        new NouvelleCandidatureNotification($user, $candidature->load('offre.fonction'))
+    );
 
     return response()->json(['message' => 'Votre candidature a été envoyée avec succès.'], 201);
 }

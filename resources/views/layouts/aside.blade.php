@@ -1,14 +1,30 @@
 <aside id="sidenav"
-    class="max-w-62.5 text-slate-700 ease-nav-brand fixed left-0 block -translate-x-full rounded-2xl border-0 bg-secondary p-0 antialiased shadow-none transition-transform duration-200 xl:left-0 xl:translate-x-0"
-    style="top: 0; height: 100vh; z-index: 999; width: 260px; display: flex; flex-direction: column;">
+    class="text-slate-700 ease-nav-brand fixed left-0 block -translate-x-full rounded-2xl border-0 bg-secondary p-0 antialiased shadow-none transition-transform duration-200 xl:left-0 xl:translate-x-0"
+    style="top: 0; height: 100vh; z-index: 999; display: flex; flex-direction: column;">
 
-    <div class="sidebar-logo-wrapper" style="flex-shrink: 0; position: relative; padding: 16px 16px 12px;">
-        <i class="absolute top-0 right-0 hidden p-4 opacity-50 cursor-pointer fas fa-times text-slate-400 xl:hidden"
-            sidenav-close></i>
-        <a href="{{ auth()->user()->user_type === 'super_admin' ? route('dashboard.superadmin') : (is_controller() ? route('dashboard.controller') : route('dashboard')) }}"
-            class="sidebar-logo-inner">
+    @php
+        $dashboardRoute = match (auth()->user()->user_type) {
+            'super_admin' => 'dashboard.superadmin',
+            'admin' => 'dashboard',
+            'manager' => 'manager.dashboard',
+            'controller' => 'dashboard.controller',
+            'user' => 'employee.dashboard',
+            'customer' => 'customer.dashboard',
+        };
+    @endphp
+
+    <div class="sidebar-logo-wrapper" style="flex-shrink: 0; position: relative; padding: 16px 12px 12px; display: flex; align-items: center; gap: 8px;">
+        <button type="button" class="absolute top-0 right-0 hidden p-4 opacity-50 cursor-pointer text-slate-400 bg-transparent border-0 xl:hidden"
+            sidenav-close aria-label="{{ __('Fermer le menu') }}">
+            <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+        <a href="{{ route($dashboardRoute) }}" class="sidebar-logo-inner" aria-label="Easy Point">
             <img src="{{ asset('images/logo.png') }}" alt="Easy Point" />
+            <span class="sidebar-collapsed-mark" aria-hidden="true">EP</span>
         </a>
+        <button type="button" class="sidebar-collapse-btn" data-sidebar-collapse aria-label="{{ __('Réduire le menu') }}" aria-expanded="true" title="{{ __('Réduire le menu') }}">
+            <i class="fa-solid fa-angles-left" aria-hidden="true"></i>
+        </button>
     </div>
 
     <div id="sidenavScrollable"
@@ -20,11 +36,15 @@
                 <ul class="flex flex-col pl-0 mb-0">
                     @if (is_super_admin())
                         @include('layouts.super_admin_li')
+                    @elseif (is_user())
+                        @include('layouts.employee_li')
+                    @elseif (is_customer())
+                        @include('layouts.customer_li')
                     @else
                         @include('layouts.company_li')
                     @endif
 
-                    @if (!is_user())
+                    @if (!is_user() && !is_customer())
                         <li class="mt-0.5 w-full">
                             <a class="{{ Request::is('notifications*') ? 'bg-primary font-bold shadow-soft-xl rounded-lg btnAside' : '' }} py-2 ease-nav-brand my-0 mx-4 flex items-center whitespace-nowrap px-4 transition-colors"
                                 href="{{ route('notifications.index') }}">
@@ -40,7 +60,7 @@
 
             {{-- Section General --}}
             <div class="w-full mt-6">
-                @if (!is_user())
+                @if (!is_user() && !is_customer())
                     <h6 class="pl-6 ml-2 font-bold leading-tight text-xs text-slate-400 uppercase">{{ __('General') }}</h6>
                     <ul class="flex flex-col pl-0 mb-0 mt-2">
                         @if (is_super_admin())
@@ -76,21 +96,22 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"
-                        class="inline-block w-full px-6 py-3 font-bold text-center bg-primary text-white uppercase align-middle transition-all ease-in border-0 rounded-lg select-none shadow-soft-md bg-150 bg-x-25 leading-pro hover:shadow-soft-2xl hover:scale-102">
-                        {{ __('Logout') }}
+                        class="sidebar-logout-button inline-block w-full px-6 py-3 font-bold text-center bg-primary text-white uppercase align-middle transition-all ease-in border-0 rounded-lg select-none shadow-soft-md bg-150 bg-x-25 leading-pro hover:shadow-soft-2xl hover:scale-102">
+                        <i class="fa-solid fa-right-from-bracket sidebar-logout-icon" aria-hidden="true"></i>
+                        <span>{{ (is_user() || is_customer()) ? __('Déconnexion') : __('Logout') }}</span>
                     </button>
                 </form>
             </div>
 
             {{-- Plan actuel --}}
-            @if (auth()->check() && auth()->user()->user_type !== 'super_admin' && auth()->user()->company)
+            @if (auth()->check() && in_array(auth()->user()->user_type, ['admin', 'manager']) && auth()->user()->company)
                 @php
                     $activeSub = auth()->user()->company->activeSubscription;
                     $planName = $activeSub && $activeSub->plan ? $activeSub->plan->name : 'Aucun Plan';
                     $isFree = $activeSub && $activeSub->plan ? (strtolower($activeSub->plan->slug) === 'free' || strtolower($activeSub->plan->name) === 'free') : true;
                 @endphp
 
-                <div class="mt-2 mb-6 p-3 bg-white/60 dark:bg-slate-800/40 rounded-xl border border-gray-200/50 flex flex-col items-center justify-center text-center shadow-sm">
+                <div class="sidebar-current-plan mt-2 mb-6 p-3 bg-white/60 dark:bg-slate-800/40 rounded-xl border border-gray-200/50 flex flex-col items-center justify-center text-center shadow-sm">
                     <span class="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">{{ __('Plan Actuel') }}</span>
 
                     <span class="px-3 py-1 text-xs font-bold rounded-full {{ $isFree ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-green-100 text-green-800 border border-green-200' }}">
@@ -193,6 +214,34 @@
         height: 32px !important;
         width: auto !important;
         display: block !important;
+    }
+
+    .sidebar-collapsed-mark { display: none; }
+
+    .sidebar-collapse-btn {
+        flex: 0 0 32px;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 8px;
+        color: rgba(255, 255, 255, 0.78);
+        background: rgba(255, 255, 255, 0.06);
+        cursor: pointer;
+        transition: background 0.2s, color 0.2s;
+    }
+
+    .sidebar-collapse-btn:hover {
+        background: rgba(255, 255, 255, 0.14);
+        color: #6ecfb5;
+    }
+
+    .sidebar-logout-icon { display: none; }
+
+    @media (max-width: 1280px) {
+        .sidebar-collapse-btn { display: none; }
     }
 </style>
 

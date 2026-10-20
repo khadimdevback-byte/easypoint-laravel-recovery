@@ -1632,7 +1632,7 @@
           <a href="https://www.instagram.com/"><i class="fab fa-instagram"></i></a>
         </div>
       </div>
-      <div class="col-lg-2 col-md-6">
+      <div class="col-lg-4 col-md-6">
         <h5 class="footer-title">Produit</h5>
         <ul class="footer-links">
             <li><a href="{{route('siteVitrine.acceuil')}}"><i class="fas fa-chevron-right"></i>Acceuil</a></li>

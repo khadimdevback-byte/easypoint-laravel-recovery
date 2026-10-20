@@ -10,7 +10,12 @@ class NotificationController extends Controller
 
     public function index()
     {
-        return view('notifications.index');
+        $user = Auth::user();
+
+        return view('notifications.index', [
+            'notifications' => $user->notifications()->latest()->paginate(20),
+            'unreadCount' => $user->unreadNotifications()->count(),
+        ]);
     }
 
 
@@ -19,7 +24,7 @@ class NotificationController extends Controller
         $user = Auth::user();
 
         // Marquer toutes les notifications non lues comme lues
-        $user->unreadNotifications->markAsRead();
+        $user->unreadNotifications()->update(['read_at' => now()]);
 
         return response()->json(['message' => 'Toutes les notifications ont été marquées comme lues.']);
     }

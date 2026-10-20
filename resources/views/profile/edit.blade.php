@@ -217,7 +217,7 @@
                             <div class="form-group">
                                 <label class="form-label">{{ __('Mot de passe actuel') }} <span class="required">*</span></label>
                                 <input type="password" name="current_password" class="form-input" placeholder="{{ __('Mot de passe actuel') }}" required>
-                                @error('current_password')
+                                @error('current_password', 'updatePassword')
                                     <p class="text-red-500">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -226,7 +226,7 @@
                             <div class="form-group">
                                 <label class="form-label">{{ __('Nouveau mot de passe') }} <span class="required">*</span></label>
                                 <input type="password" name="password" class="form-input" placeholder="{{ __('Nouveau mot de passe') }}" required>
-                                @error('password')
+                                @error('password', 'updatePassword')
                                     <p class="text-red-500">{{ $message }}</p>
                                 @enderror
                             </div>

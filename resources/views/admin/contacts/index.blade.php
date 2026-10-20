@@ -15,19 +15,19 @@
             <div class="action-stats">
                 <div class="stat-badge">
                     <i class="fas fa-clock"></i>
-                    <span>En attente: {{ $contacts->where('status', 'pending')->count() }}</span>
+                    <span>En attente: {{ $statusCounts['pending'] ?? 0 }}</span>
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-spinner"></i>
-                    <span>En traitement: {{ $contacts->where('status', 'processing')->count() }}</span>
+                    <span>En traitement: {{ $statusCounts['processing'] ?? 0 }}</span>
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-check-circle"></i>
-                    <span>Répondu: {{ $contacts->where('status', 'responded')->count() }}</span>
+                    <span>Répondu: {{ $statusCounts['responded'] ?? 0 }}</span>
                 </div>
                 <div class="stat-badge">
                     <i class="fas fa-archive"></i>
-                    <span>Clôturé: {{ $contacts->where('status', 'closed')->count() }}</span>
+                    <span>Clôturé: {{ $statusCounts['closed'] ?? 0 }}</span>
                 </div>
             </div>
         </div>
@@ -98,14 +98,14 @@
                     </thead>
                     <tbody>
                         @forelse($contacts as $contact)
-                            <tr class="{{ !$contact->is_read ? 'unread-row' : '' }}">
-                                <td>
+                            <tr class="contact-row {{ !$contact->is_read ? 'unread-row' : '' }}">
+                                <td data-label="{{ __('Date') }}">
                                     <div class="date-cell">
                                         <span class="date-day">{{ $contact->created_at->format('d/m/Y') }}</span>
                                         <span class="date-time">{{ $contact->created_at->format('H:i') }}</span>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="{{ __('Nom complet') }}">
                                     <div class="contact-cell">
                                         <div class="contact-avatar">
                                             <span class="avatar-initials">
@@ -117,10 +117,10 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="{{ __('Email') }}">
                                     <a href="mailto:{{ $contact->email }}" class="email-link">{{ $contact->email }}</a>
                                 </td>
-                                <td>
+                                <td data-label="{{ __('Entreprise') }}">
                                     <div class="company-cell">
                                         <span class="company-name">{{ $contact->company }}</span>
                                         @if($contact->employees)
@@ -128,12 +128,12 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="{{ __('Sujet') }}">
                                     <div class="subject-cell" title="{{ $contact->subject }}">
                                         {{ Str::limit($contact->subject, 40) }}
                                     </div>
                                 </td>
-                                <td>
+                                <td data-label="{{ __('Type') }}">
                                     <span class="intent-badge
                                         @if($contact->intent == 'general') intent-general
                                         @elseif($contact->intent == 'devis') intent-devis
@@ -146,8 +146,8 @@
                                             <i class="fas fa-headset"></i> Support
                                         @endif
                                     </span>
-                                </tr>
-                                <td>
+                                </td>
+                                <td data-label="{{ __('Statut') }}">
                                     <span class="status-badge
                                         @if($contact->status == 'pending') status-pending
                                         @elseif($contact->status == 'processing') status-processing
@@ -164,7 +164,7 @@
                                         @endif
                                     </span>
                                 </td>
-                                <td>
+                                <td data-label="{{ __('Actions') }}">
                                     <div class="action-buttons">
                                         <a href="{{ route('admin.contacts.show', $contact->id) }}" class="action-btn-view" title="Voir le message">
                                             <i class="fas fa-eye"></i>
@@ -272,6 +272,7 @@
             overflow: visible;
             position: relative;
             margin: 0 24px;
+            box-shadow: 0 12px 34px rgba(45, 58, 62, 0.06);
         }
         .content-header {
             display: flex;
@@ -305,10 +306,11 @@
 
         /* Filtres */
         .filters-bar {
-            background: var(--gtc);
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 24px;
+            background: #f6f9fa;
+            border: 1px solid #e5ecee;
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 20px;
         }
         .filters-form {
             width: 100%;
@@ -320,24 +322,28 @@
             align-items: center;
         }
         .filter-select {
-            padding: 8px 16px;
-            border: 1px solid var(--gl);
-            border-radius: 8px;
+            min-height: 42px;
+            padding: 8px 14px;
+            border: 1px solid #d8e2e5;
+            border-radius: 10px;
             font-size: 0.8rem;
             background: white;
             color: var(--gf);
-            min-width: 160px;
+            min-width: 190px;
+            transition: border-color 0.18s, box-shadow 0.18s;
         }
         .filter-select:focus {
             outline: none;
             border-color: var(--vp);
+            box-shadow: 0 0 0 3px rgba(46, 125, 100, 0.12);
         }
         .filter-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            padding: 8px 20px;
-            border-radius: 8px;
+            min-height: 42px;
+            padding: 8px 18px;
+            border-radius: 10px;
             font-size: 0.75rem;
             font-weight: 500;
             cursor: pointer;
@@ -366,9 +372,14 @@
         .table-wrapper {
             overflow-x: auto;
             position: relative;
+            border: 1px solid #e8eef0;
+            border-radius: 14px;
+            scrollbar-width: thin;
+            scrollbar-color: #b8c9cc transparent;
         }
         .data-table {
             width: 100%;
+            min-width: 1120px;
             border-collapse: collapse;
             font-size: 0.83rem;
             color: #374151;
@@ -378,7 +389,7 @@
             border-bottom: 1px solid #e5e7eb;
         }
         .data-table th {
-            padding: 12px 16px;
+            padding: 14px 16px;
             font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
@@ -386,15 +397,17 @@
             color: #6b7280;
             text-align: left;
             white-space: nowrap;
+            background: #f7f9fa;
         }
         .data-table td {
-            padding: 12px 16px;
+            padding: 14px 16px;
             border-bottom: 1px solid #f3f4f6;
             vertical-align: middle;
         }
         .data-table tbody tr:last-child td { border-bottom: none; }
         .data-table tbody tr:hover { background: #f9fafb; }
-        .unread-row { background: #eff6ff; }
+        .unread-row { background: #f1f7ff; }
+        .unread-row td:first-child { box-shadow: inset 3px 0 #4c8bd9; }
 
         /* Date cell */
         .date-cell {
@@ -434,6 +447,7 @@
         .contact-name {
             font-size: 0.8rem;
             color: #1f2937;
+            white-space: nowrap;
         }
         .font-bold {
             font-weight: 700;
@@ -444,6 +458,7 @@
             font-size: 0.75rem;
             color: var(--vp);
             text-decoration: none;
+            white-space: nowrap;
         }
         .email-link:hover {
             text-decoration: underline;
@@ -453,6 +468,7 @@
         .company-cell {
             display: flex;
             flex-direction: column;
+            min-width: 130px;
         }
         .company-name {
             font-size: 0.75rem;
@@ -468,7 +484,7 @@
         .subject-cell {
             font-size: 0.75rem;
             color: #4b5563;
-            max-width: 200px;
+            max-width: 230px;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -546,6 +562,8 @@
             padding: 60px 16px;
             color: #9ca3af;
         }
+        .empty-row i { color: #9aaeb2; }
+        .empty-row p { margin: 10px 0 0; color: #52656a; font-size: 0.95rem; font-weight: 600; }
         .empty-sub {
             font-size: 0.7rem;
             display: block;
@@ -559,18 +577,87 @@
             border-top: 1px solid #f3f4f6;
         }
 
-        @media (max-width: 1280px) { .action-bar { left: 0; } }
+        @media (max-width: 1500px) {
+            .table-wrapper { overflow: visible; border: 0; }
+            .data-table,
+            .data-table tbody { display: block; min-width: 0; }
+            .data-table thead {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                padding: 0;
+                margin: -1px;
+                overflow: hidden;
+                clip: rect(0, 0, 0, 0);
+                white-space: nowrap;
+                border: 0;
+            }
+            .data-table tbody { display: grid; gap: 12px; }
+            .data-table tbody tr:not(.contact-row) { display: block; }
+            .data-table tr.contact-row {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0 16px;
+                padding: 8px 14px;
+                border: 1px solid #e5ecee;
+                border-radius: 14px;
+                background: white;
+                box-shadow: 0 4px 14px rgba(45, 58, 62, 0.04);
+            }
+            .data-table tr.contact-row.unread-row { background: #f1f7ff; }
+            .data-table tr.contact-row td {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 12px;
+                min-width: 0;
+                padding: 10px 2px;
+                border-bottom: 1px solid #edf1f2;
+                overflow-wrap: anywhere;
+            }
+            .data-table tr.contact-row td::before {
+                content: attr(data-label);
+                flex: 0 0 82px;
+                color: #78898d;
+                font-size: 0.62rem;
+                font-weight: 700;
+                letter-spacing: 0.035em;
+                text-transform: uppercase;
+            }
+            .data-table tr.contact-row td:nth-last-child(-n + 2) { border-bottom: 0; }
+            .data-table tr.contact-row td:nth-child(3) .email-link {
+                white-space: normal;
+                overflow-wrap: anywhere;
+                text-align: right;
+            }
+            .data-table tr.contact-row .subject-cell { max-width: none; text-align: right; white-space: normal; }
+            .data-table tr.contact-row .contact-cell { min-width: 0; justify-content: flex-end; }
+            .data-table tr.contact-row .company-cell { min-width: 0; text-align: right; }
+            .data-table tr.contact-row .action-buttons { margin-left: auto; }
+        }
+        @media (max-width: 1280px) {
+            .action-bar { left: 0; }
+        }
         @media (max-width: 768px) {
-            .page-content { padding: 46px 0 0 0; }
-            .content-card { margin: 0 16px; padding: 16px; }
+            .page-content { padding: 76px 0 0 0; }
+            .content-card { margin: 0 10px; padding: 16px 12px; border-radius: 14px; }
             .action-bar-inner { padding: 0 14px; flex-wrap: wrap; gap: 8px; height: auto; padding: 8px 14px; }
-            .action-stats { flex-wrap: wrap; }
-            .content-header { flex-direction: column; align-items: flex-start; }
-            .filters-group { flex-direction: column; width: 100%; }
-            .filter-select { width: 100%; }
-            .filter-btn { width: 100%; justify-content: center; }
-            .contact-cell { min-width: 150px; }
-            .company-cell { min-width: 120px; }
+            .action-stats { flex-wrap: wrap; gap: 6px; }
+            .stat-badge { padding: 4px 8px; font-size: 0.65rem; }
+            .content-header { flex-direction: column; align-items: stretch; }
+            .export-group { width: 100%; }
+            .export-btn { flex: 1; justify-content: center; }
+            .filters-bar { padding: 10px; }
+            .filters-group { display: grid; grid-template-columns: 1fr 1fr; width: 100%; gap: 8px; }
+            .filter-select { width: 100%; min-width: 0; }
+            .filter-btn { justify-content: center; padding: 8px 10px; }
+            .pagination-wrapper { overflow-x: auto; }
+            .data-table tr.contact-row {
+                grid-template-columns: minmax(0, 1fr);
+                padding: 6px 12px;
+            }
+            .data-table tr.contact-row td:nth-last-child(2) { border-bottom: 1px solid #edf1f2; }
+            .data-table tr.contact-row td::before { flex-basis: 92px; }
         }
     </style>
 

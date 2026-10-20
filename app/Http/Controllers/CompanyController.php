@@ -644,6 +644,10 @@ class CompanyController extends Controller
         $company->status = 'active'; // ou true si c’est booléen
         $company->save();
 
+        User::where('company_id', $company->id)
+            ->where('user_type', 'admin')
+            ->update(['status' => 'active']);
+
         return redirect()->back()->with('success', 'La société a été activée avec succès.');
     }
 

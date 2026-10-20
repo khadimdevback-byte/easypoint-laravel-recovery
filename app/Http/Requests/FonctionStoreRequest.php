@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FonctionStoreRequest extends FormRequest
 {
@@ -22,8 +23,7 @@ class FonctionStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
-            'nom_fonction'=>'|required|unique:fonctions,nom_fonction,id',
+            'nom_fonction' => ['required', 'string', Rule::unique('fonctions', 'nom_fonction')],
             'description_fonction'=>'nullable'
         ];
     }

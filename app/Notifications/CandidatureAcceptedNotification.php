@@ -28,7 +28,7 @@ class CandidatureAcceptedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -37,9 +37,10 @@ class CandidatureAcceptedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', url('/'))
-                    ->line('Thank you for using our application!');
+                    ->subject('Candidature acceptée')
+                    ->greeting('Bonjour ' . ($notifiable->first_name ?? $notifiable->name) . ',')
+                    ->line($this->message())
+                    ->action('Accéder à mon compte', url('/'));
     }
 
     /**
@@ -50,14 +51,24 @@ class CandidatureAcceptedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'message' => "Votre candidature pour l'offre {$this->candidature->offre->title} a été acceptée.",
+            'message' => $this->message(),
         ];
     }
 
     public function toBroadcast($notifiable)
-{
-    return new BroadcastMessage([
-        'message' => "Votre candidature pour l'offre {$this->candidature->offre->title} a été acceptée.",
-    ]);
-}
+    {
+        return new BroadcastMessage([
+            'message' => $this->message(),
+        ]);
+    }
+
+    private function message(): string
+    {
+        $offer = $this->candidature->offre;
+        $offerName = $offer?->fonction?->nom_fonction
+            ?? $offer?->description_offre
+            ?? 'votre offre';
+
+        return "Votre candidature pour l'offre {$offerName} a été acceptée.";
+    }
 }

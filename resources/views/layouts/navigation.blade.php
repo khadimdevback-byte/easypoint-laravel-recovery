@@ -6,6 +6,7 @@
         <div class="navbar-custom-right">
 
             <!-- Notifications -->
+            @if (!is_customer())
             <div class="notification-wrapper">
                 <a href="javascript:;" class="notification-trigger" id="notif-trigger">
                     @if (Auth::user()->unreadNotifications->count() > 0)
@@ -18,10 +19,14 @@
                     @if (Auth::user()->unreadNotifications->count() > 0)
                         @foreach (Auth::user()->unreadNotifications->sortByDesc('created_at')->take(4) as $notification)
                             <li class="notification-item">
-                                <a href="javascript:;">
+                                <a href="{{ route('notifications.index') }}">
                                     <div class="notification-content">
                                         <div class="notification-avatar">
-                                            <img src="{{ asset('storage/' . $notification->data['avatar']) }}" alt="" />
+                                            @if (!empty($notification->data['avatar']))
+                                                <img src="{{ asset('storage/' . $notification->data['avatar']) }}" alt="" />
+                                            @else
+                                                <i class="fa-regular fa-bell" aria-hidden="true"></i>
+                                            @endif
                                         </div>
                                         <div class="notification-text">
                                             <h6>{{ $notification->data['message'] }}</h6>
@@ -44,6 +49,7 @@
                     @endif
                 </ul>
             </div>
+            @endif
 
             <!-- Dropdown utilisateur -->
             <div class="user-dropdown">
@@ -67,7 +73,15 @@
 
                     <x-slot name="content">
                         {{-- Profil --}}
-                        @if (Auth::user()->user_type != 'super_admin')
+                        @if (Auth::user()->user_type == 'user')
+                            <x-dropdown-link :href="route('employee.account')">
+                                <i class="fas fa-user"></i> {{ __('Profil') }}
+                            </x-dropdown-link>
+                        @elseif (Auth::user()->user_type == 'customer')
+                            <x-dropdown-link :href="route('customer.dashboard')">
+                                <i class="fas fa-user"></i> {{ __('Mon espace') }}
+                            </x-dropdown-link>
+                        @elseif (Auth::user()->user_type != 'super_admin')
                             @if (Auth::user()->user_type == 'admin')
                                 <x-dropdown-link :href="route('profile.edit.company')">
                                     <i class="fas fa-user"></i> {{ __('Profil') }}

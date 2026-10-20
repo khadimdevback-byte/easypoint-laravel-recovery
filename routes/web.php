@@ -37,6 +37,8 @@ use App\Http\Controllers\Employee\EmployeeBilanController;
 use App\Http\Controllers\Employee\EmployeeAccountController;
 use App\Http\Controllers\Employee\EmployeeDashboardController;
 use App\Http\Controllers\Employee\EmployeePlanningNotificationController;
+use App\Http\Controllers\Manager\ManagerDashboardController;
+use App\Http\Controllers\Customer\CustomerDashboardController;
 use App\Http\Controllers\FooterController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\SiteRotationController;
@@ -115,8 +117,7 @@ Route::get('/', function () {
 });
 
 // Route pour le tableau de bord
-Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(['auth', 'verified','check.subscription'])->name('dashboard');
-
+Route::get('/dashboard', [DashboardController::class, 'dashboard'])->middleware(['auth', 'verified', 'check.subscription'])->name('dashboard');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/demandes', [DemandeController::class, 'listeEntreprise'])->name('admin.demandes.index');
@@ -128,6 +129,8 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard/controller', [DashboardController::class, 'controllerDashboard'])->name('dashboard.controller');
     Route::get('/dashboard/super-admin', [DashboardController::class, 'superAdminDashboard'])->name('dashboard.superadmin');
+    Route::get('/dashboard/manager', [ManagerDashboardController::class, 'index'])->middleware('verified')->name('manager.dashboard');
+    Route::get('/dashboard/customer', [CustomerDashboardController::class, 'index'])->name('customer.dashboard');
     Route::get('/payments/details/{mode}', [DashboardController::class, 'paymentDetails'])->name('superadmin.payments.details');
 
     // Routes pour la gestion du profil

@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class FonctionUpdateRequest extends FormRequest
 {
@@ -22,8 +23,12 @@ class FonctionUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
-            'description_fonction'=>'nullable',
+            'nom_fonction' => [
+                'required',
+                'string',
+                Rule::unique('fonctions', 'nom_fonction')->ignore($this->route('fonction')),
+            ],
+            'description_fonction' => 'nullable',
         ];
     }
 }

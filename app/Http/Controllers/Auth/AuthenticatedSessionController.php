@@ -28,17 +28,6 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         // Récupérer l'utilisateur authentifié
         $user = $request->user();
-        // Vérifier le type d'utilisateur
-        if (in_array($user->user_type, ['customer'])) {
-            // Déconnecter l'utilisateur si son type est 'customer'
-            Auth::logout();
-
-            // Rediriger l'utilisateur avec un message d'erreur
-            return redirect()->route('login')->withErrors([
-                'email' => __('Your account is not authorised to connect.'),
-            ]);
-        }
-
         if ($user->status != 'active') {
 
             Auth::logout();
@@ -50,19 +39,25 @@ class AuthenticatedSessionController extends Controller
         // Régénérer la session après l'authentification
         $request->session()->regenerate();
 
-        if (Auth::user()->user_type == 'super_admin') {
+        $dashboardRoute = match ($user->user_type) {
+            'super_admin' => 'dashboard.superadmin',
+            'admin' => 'dashboard',
+            'manager' => 'manager.dashboard',
+            'controller' => 'dashboard.controller',
+            'user' => 'employee.dashboard',
+            'customer' => 'customer.dashboard',
+            default => null,
+        };
 
-            return redirect()->intended(route('dashboard.superadmin', absolute: false));
-        } elseif (Auth::user()->user_type == 'controller') {
+        if ($dashboardRoute === null) {
+            Auth::logout();
 
-            return redirect()->intended(route('dashboard.controller', absolute: false));
-        }elseif (Auth::user()->user_type == 'user') {
-
-            return redirect()->intended(route('employee.dashboard', absolute: false));
-        } elseif (Auth::user()->user_type == 'admin' || Auth::user()->user_type == 'manager') {
-
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->route('login')->withErrors([
+                'email' => __('Your account is not authorised to connect.'),
+            ]);
         }
+
+        return redirect()->route($dashboardRoute);
     }
 
     /**

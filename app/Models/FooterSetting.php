@@ -28,8 +28,8 @@ class FooterSetting extends Model
     {
         return self::create([
             'email' => 'contact@easypoint.com',
-            'phone' => '+228 90 00 00 00',
-            'address' => 'Lomé, Togo',
+            'phone' => '+221 77 123 45 67',
+            'address' => 'Dakar, Sénégal',
             'copyright_text' => '2026 EasyPoint. Tous droits réservés.'
         ]);
     }

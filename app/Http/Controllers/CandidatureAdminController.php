@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\CandidatureAcceptedNotification;
 use App\Models\User;
 use App\Models\Offre;
 use App\Models\Candidature;
@@ -216,6 +217,12 @@ public function accept($id, Request $request)
         $employee->status = 'active';
         $employee->save();
     }
+
+    Notification::sendNow(
+        $employee,
+        new CandidatureAcceptedNotification($candidature->load('offre.fonction')),
+        ['database']
+    );
 
     // Notification OneSignal
     $this->oneSignal->sendToUser(

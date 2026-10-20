@@ -21,20 +21,30 @@ class NouvelleCandidatureNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['broadcast', 'database']; // Notifications en temps réel + base de données
+        return ['database', 'broadcast'];
     }
 
     public function toBroadcast($notifiable)
     {
         return new BroadcastMessage([
-            'message' => "{$this->user->name} a postulé pour l'offre {$this->candidature->offre->title}.",
+            'message' => $this->message(),
         ]);
     }
 
     public function toArray($notifiable)
     {
         return [
-            'message' => "{$this->user->name} a postulé pour l'offre {$this->candidature->offre->title}.",
+            'message' => $this->message(),
         ];
+    }
+
+    private function message(): string
+    {
+        $offer = $this->candidature->offre;
+        $offerName = $offer?->fonction?->nom_fonction
+            ?? $offer?->description_offre
+            ?? 'une offre';
+
+        return "{$this->user->name} a postulé pour l'offre {$offerName}.";
     }
 }

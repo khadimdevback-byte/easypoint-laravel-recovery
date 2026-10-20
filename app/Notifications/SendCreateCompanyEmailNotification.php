@@ -26,7 +26,7 @@ class SendCreateCompanyEmailNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['database', 'mail'];
     }
 
     /**
@@ -71,6 +71,17 @@ class SendCreateCompanyEmailNotification extends Notification
             'address' => $this->companyData['address'] ?? "",
             'status' => $this->companyData['status'] ?? "",
             'timezone' => $this->companyData['timezone'] ?? "",
+        ];
+    }
+
+    public function toDatabase(object $notifiable): array
+    {
+        $companyName = $this->companyData['compagny_name'] ?? 'Entreprise';
+
+        return [
+            'message' => "Nouvelle entreprise ajoutée : {$companyName}.",
+            'company_name' => $companyName,
+            'url' => url('/companies'),
         ];
     }
 }

@@ -83,6 +83,10 @@
             transition: var(--t);
         }
 
+        body.sidebar-collapsed {
+            --sidebar-width: 76px;
+        }
+
         .page-container {
             padding: calc(var(--navbar-height) + 28px) 24px 24px 24px;
         }
@@ -200,10 +204,74 @@
             to   { opacity: 1; transform: translateY(0); }
         }
 
+        body.sidebar-collapsed #sidenav .sidebar-logo-wrapper {
+            flex-direction: column;
+            justify-content: center;
+            padding: 14px 8px 12px !important;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-logo-inner {
+            width: 42px !important;
+            height: 42px;
+            justify-content: center;
+            padding: 4px !important;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-logo-inner img { display: none; }
+
+        body.sidebar-collapsed #sidenav .sidebar-collapsed-mark {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #e8f5f1;
+            color: var(--vp);
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        body.sidebar-collapsed #sidenavScrollable { padding: 0 8px !important; }
+
+        body.sidebar-collapsed #sidenav .w-full > ul > li > a {
+            width: 52px;
+            justify-content: center;
+            margin: 0 auto 8px !important;
+            padding: 10px 0 !important;
+        }
+
+        body.sidebar-collapsed #sidenav .w-full > ul > li > a span,
+        body.sidebar-collapsed #sidenav .w-full > ul > li > a > .fa-chevron-down,
+        body.sidebar-collapsed #sidenav h6,
+        body.sidebar-collapsed #sidenav .hs-accordion ul,
+        body.sidebar-collapsed #sidenav .sidebar-current-plan,
+        body.sidebar-collapsed #sidenav .sidebar-logout-button span {
+            display: none !important;
+        }
+
+        body.sidebar-collapsed #sidenav .w-full > ul > li > a > div {
+            margin: 0 !important;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-logout-button {
+            width: 52px;
+            height: 44px;
+            margin: 0 auto !important;
+            padding: 0 !important;
+            font-size: 0;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-logout-icon { display: inline-block; font-size: 16px; }
+
+        body.sidebar-collapsed #sidenav .sidebar-collapse-btn i { transform: rotate(180deg); }
+
         /* Responsive breakpoints */
         @media (max-width: 1280px) {
+            :root { --sidebar-width: 260px; }
+            body.sidebar-collapsed { --sidebar-width: 260px; }
             .main-content { margin-left: 0; }
-            #sidenav { transform: translateX(-100%); }
+            #sidenav { width: 260px; transform: translateX(-100%); }
             #sidenav:not(.hidden) { transform: translateX(0); }
             .page-container { padding: calc(var(--navbar-height) + 16px) 16px 16px 16px; }
         }
@@ -243,18 +311,82 @@
     <script>
         document.addEventListener("DOMContentLoaded", function() {
             const sidenavTrigger = document.querySelector("[sidenav-trigger]");
+            const sidenavClose = document.querySelector("[sidenav-close]");
             const sidenav = document.getElementById("sidenav");
+            const sidebarCollapse = document.querySelector("[data-sidebar-collapse]");
+
+            function setSidebarCollapsed(collapsed, persist = true) {
+                if (window.innerWidth <= 1280) {
+                    collapsed = false;
+                }
+
+                document.body.classList.toggle("sidebar-collapsed", collapsed);
+                document.querySelectorAll("#sidenav a, #sidenav .sidebar-logout-button").forEach(function(item) {
+                    const label = item.querySelector("span")?.textContent.trim();
+                    if (!label) return;
+
+                    if (item.dataset.sidebarOriginalTitle === undefined) {
+                        item.dataset.sidebarOriginalTitle = item.getAttribute("title") || "";
+                        item.dataset.sidebarOriginalLabel = item.getAttribute("aria-label") || "";
+                    }
+
+                    item.setAttribute("title", collapsed ? label : item.dataset.sidebarOriginalTitle);
+                    if (item.tagName === "A") {
+                        item.setAttribute("aria-label", collapsed ? label : item.dataset.sidebarOriginalLabel);
+                    }
+                });
+                if (sidebarCollapse) {
+                    sidebarCollapse.setAttribute("aria-expanded", String(!collapsed));
+                    sidebarCollapse.setAttribute("aria-label", collapsed ? "Développer le menu" : "Réduire le menu");
+                    sidebarCollapse.title = collapsed ? "Développer le menu" : "Réduire le menu";
+                }
+
+                if (persist && window.innerWidth > 1280) {
+                    localStorage.setItem("easypoint-sidebar-collapsed", String(collapsed));
+                }
+            }
+
+            setSidebarCollapsed(
+                window.innerWidth > 1280 && localStorage.getItem("easypoint-sidebar-collapsed") === "true",
+                false
+            );
+
+            if (sidebarCollapse) {
+                sidebarCollapse.addEventListener("click", function() {
+                    setSidebarCollapsed(!document.body.classList.contains("sidebar-collapsed"));
+                });
+            }
 
             if (sidenavTrigger && sidenav) {
                 sidenavTrigger.addEventListener("click", function() {
                     sidenav.classList.toggle("-translate-x-full");
                     sidenav.classList.toggle("hidden");
+                    if (sidenavClose) {
+                        sidenavClose.classList.toggle("hidden");
+                    }
                 });
             }
+
+            if (sidenavTrigger && sidenavClose) {
+                sidenavClose.addEventListener("click", function() {
+                    sidenavTrigger.click();
+                });
+            }
+
+            window.addEventListener("resize", function() {
+                if (window.innerWidth <= 1280) {
+                    setSidebarCollapsed(false, false);
+                } else {
+                    setSidebarCollapsed(localStorage.getItem("easypoint-sidebar-collapsed") === "true", false);
+                }
+            });
         });
 
         function toggleMenu(event, submenuId) {
             event.preventDefault();
+            if (document.body.classList.contains("sidebar-collapsed")) {
+                document.querySelector("[data-sidebar-collapse]")?.click();
+            }
             const submenu = document.getElementById(submenuId);
             const parentItem = event.currentTarget.closest('.hs-accordion');
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use App\Notifications\SendCreateUserEmailNotification;
 
@@ -32,7 +33,6 @@ class SuperAdminController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            // 'user_type' => 'required|in:super_admin',
             'name' => 'required|string|max:255',
             'first_name' => 'nullable|string|max:255',
             // 'n_social' => 'nullable|string|max:255',
@@ -43,7 +43,7 @@ class SuperAdminController extends Controller
         ]);
 
         $user = new User([
-            // 'user_type' => $request->user_type,
+            'user_type' => 'super_admin',
             'name' => $request->name,
             'first_name' => $request->first_name,
             // 'n_social' => $request->n_social,
@@ -79,19 +79,29 @@ class SuperAdminController extends Controller
 
         try {
             $user->save();
-
-            $user->notify(new SendCreateUserEmailNotification($userData));
-
-            return redirect()
-                ->route('users.index', 'super_admin')
-                ->with('success', __('Super administrator successfully created.'));
         } catch (\Exception $e) {
-
+            Log::error('Failed to create super admin.', ['exception' => $e]);
             return redirect()
                 ->back()
                 ->withInput()
                 ->with('error', __('Failure to create super admin'));
         }
+
+        try {
+            $user->notify(new SendCreateUserEmailNotification($userData));
+        } catch (\Exception $e) {
+            Log::warning('Super admin was created, but the welcome email could not be sent.', [
+                'user_id' => $user->id,
+                'exception' => $e,
+            ]);
+            return redirect()
+                ->route('users.index', 'super_admin')
+                ->with('success', __('Super administrator successfully created. The welcome email could not be sent.'));
+        }
+
+        return redirect()
+            ->route('users.index', 'super_admin')
+            ->with('success', __('Super administrator successfully created.'));
     }
 
     /**

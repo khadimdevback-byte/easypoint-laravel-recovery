@@ -17,6 +17,7 @@ class EmployeeDashboardController extends Controller
             // Si pas d'utilisateur connecté, redirige ou abort
             abort(403, 'Utilisateur non connecté');
         }
+        abort_unless($user->user_type === 'user', 403);
 
         $userId = $user->id;
 

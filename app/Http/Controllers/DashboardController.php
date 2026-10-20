@@ -16,6 +16,21 @@ class DashboardController extends Controller
 {
     public function dashboard(Request $request)
     {
+        $user = $request->user();
+        $roleDashboard = match ($user?->user_type) {
+            'super_admin' => 'dashboard.superadmin',
+            'manager' => 'manager.dashboard',
+            'controller' => 'dashboard.controller',
+            'user' => 'employee.dashboard',
+            'customer' => 'customer.dashboard',
+            default => null,
+        };
+
+        if ($roleDashboard !== null) {
+            return redirect()->route($roleDashboard);
+        }
+
+        abort_unless($user?->user_type === 'admin', 403);
 
         $today = Carbon::today();
         $yesterday = $today->copy()->subDay();
@@ -216,6 +231,8 @@ class DashboardController extends Controller
 
     public function controllerDashboard(Request $request)
     {
+        abort_unless($request->user()?->user_type === 'controller', 403);
+
         // Récupérer tous les sites auxquels l'utilisateur authentifié a accès
         $authorizeControllers = SiteControllerUser::where('user_id', Auth::user()->id);
 
@@ -300,6 +317,8 @@ class DashboardController extends Controller
 
     public function superAdminDashboard(Request $request)
     {
+        abort_unless($request->user()?->user_type === 'super_admin', 403);
+
         $totalSuperAdmin = User::where('user_type', 'super_admin')->count();
         $totalManager = User::where('user_type', 'manager')->count();
         $totalController = User::where('user_type', 'controller')->count();

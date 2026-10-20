@@ -168,8 +168,10 @@ class UserController extends Controller
     {
         if ($user_type == 'user') {
             $user = Auth::user();
-            // Récupérer toutes les fonctions sans restriction de compagnie
-            $fonction = Fonction::orderBy('nom_fonction', 'asc')->get();
+            $fonction = Fonction::whereNull('company_id')
+                ->orWhere('company_id', $user->company_id)
+                ->orderBy('nom_fonction', 'asc')
+                ->get();
             return view('users.employees.create', compact('user_type', 'fonction'));
         } elseif ($user_type == 'customer') {
             return view('users.customers.create', compact('user_type'));
@@ -326,13 +328,13 @@ class UserController extends Controller
             $startField = 'start_time_' . $day;
             $endField = 'end_time_' . $day;
 
-            // Si la checkbox est cochée, on met 1, sinon NULL
+            // Les colonnes *_checked sont non nulles en base.
             if ($request->has($checkedField) && in_array($request->input($checkedField), ['on', '1', 1, true])) {
                 $schedule[$checkedField] = 1;
                 $schedule[$startField] = $request->input($startField);
                 $schedule[$endField] = $request->input($endField);
             } else {
-                $schedule[$checkedField] = null;
+                $schedule[$checkedField] = 0;
                 $schedule[$startField] = null;
                 $schedule[$endField] = null;
             }
@@ -576,13 +578,13 @@ class UserController extends Controller
                 $startField = 'start_time_' . $day;
                 $endField = 'end_time_' . $day;
 
-                // Si la checkbox est cochée, on met 1, sinon NULL
+                // Les colonnes *_checked sont non nulles en base.
                 if ($request->has($checkedField) && in_array($request->input($checkedField), ['on', '1', 1, true])) {
                     $user->{$checkedField} = 1;
                     $user->{$startField} = $request->input($startField);
                     $user->{$endField} = $request->input($endField);
                 } else {
-                    $user->{$checkedField} = null;
+                    $user->{$checkedField} = 0;
                     $user->{$startField} = null;
                     $user->{$endField} = null;
                 }

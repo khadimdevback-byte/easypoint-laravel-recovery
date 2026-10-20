@@ -537,33 +537,53 @@
                 event.stopPropagation();
             }
 
-            document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
-                if (menu !== btn.nextElementSibling) {
-                    menu.classList.remove('show');
-                }
-            });
-
-            var menu = btn.nextElementSibling;
+            closeCompanyDropdowns();
+            var menu = btn.parentElement.querySelector('.dropdown-menu-custom');
             if (!menu) return;
 
-            if (menu.classList.contains('show')) {
-                menu.classList.remove('show');
-            } else {
-                var rect = btn.getBoundingClientRect();
-                menu.style.position = 'fixed';
-                menu.style.top = (rect.bottom + 5) + 'px';
-                menu.style.left = (rect.right - 180) + 'px';
-                menu.classList.add('show');
+            menu._dropdownParent = btn.parentElement;
+            menu._dropdownOwner = btn;
+            document.body.appendChild(menu);
+            menu.classList.add('show');
+            positionCompanyDropdown(menu, btn);
+        }
+
+        function positionCompanyDropdown(menu, btn) {
+            var rect = btn.getBoundingClientRect();
+            var menuHeight = menu.offsetHeight;
+            var menuWidth = menu.offsetWidth;
+            var top = rect.bottom + 5;
+            var left = rect.right - menuWidth;
+
+            if (top + menuHeight > window.innerHeight - 8 && rect.top - menuHeight - 5 >= 8) {
+                top = rect.top - menuHeight - 5;
             }
+
+            menu.style.top = Math.max(8, Math.min(top, window.innerHeight - menuHeight - 8)) + 'px';
+            menu.style.left = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8)) + 'px';
+        }
+
+        function closeCompanyDropdowns() {
+            document.querySelectorAll('.dropdown-menu-custom.show').forEach(menu => {
+                menu.classList.remove('show');
+                if (menu._dropdownParent) {
+                    menu._dropdownParent.appendChild(menu);
+                }
+                menu.style.top = '';
+                menu.style.left = '';
+            });
         }
 
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('.dropdown-container')) {
-                document.querySelectorAll('.dropdown-menu-custom').forEach(menu => {
-                    menu.classList.remove('show');
-                });
+            if (!e.target.closest('.dropdown-container') && !e.target.closest('.dropdown-menu-custom')) {
+                closeCompanyDropdowns();
+            } else if (e.target.closest('.dropdown-item-custom')) {
+                closeCompanyDropdowns();
             }
         });
+
+        window.addEventListener('resize', closeCompanyDropdowns);
+        document.querySelector('.table-wrapper')?.addEventListener('scroll', closeCompanyDropdowns);
 
         // =====================================================
         // SELECT ALL & UPDATE BUTTONS
@@ -796,7 +816,7 @@
             var token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
             $.ajax({
-                url: "{{ url('companies/disabled') }}/" + currentDisableId,
+                url: "{{ route('companies.disabled', ':id') }}".replace(':id', currentDisableId),
                 type: 'PATCH',
                 data: {
                     _token: token,
@@ -850,11 +870,10 @@
                     var token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}';
 
                     $.ajax({
-                        url: "{{ url('companies') }}/" + companyId + "/activate",
-                        type: 'PATCH', // ← Utiliser PATCH ou POST selon votre route
+                        url: "{{ route('companies.activate', ':id') }}".replace(':id', companyId),
+                        type: 'POST',
                         data: { 
-                            _token: token,
-                            _method: 'PATCH' // Si votre route utilise PATCH
+                            _token: token
                         },
                         success: function(response) {
                             var row = document.getElementById('company-row-' + companyId);

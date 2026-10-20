@@ -22,10 +22,15 @@ class DatabaseSeeder extends Seeder
 
 
         $this->call([
-            AttendanceSeeder::class,
-            //UserSeeder::class,
-            //CompanySeeder::class,
-            //SiteSeeder::class,
+            UserSeeder::class,
         ]);
+
+        if (app()->environment(['local', 'testing'])) {
+            $this->call([
+                SupportMessageSeeder::class,
+                ContactSeeder::class,
+                NotificationSeeder::class,
+            ]);
+        }
     }
 }

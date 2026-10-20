@@ -14,23 +14,8 @@ class EmployeeAccountController extends Controller
 {
     public function index(Request $request)
     {
-        $user = $request->user()->load('fonction');
-        // Initialisation de $sites pour éviter l'erreur "Undefined variable"
-        $sites = collect(); // Collection vide
-
-        $siteIds = SiteUser::where('user_id', $user->id)
-            ->pluck('site_id');
-
-        $sites = Site::with(['company', 'customer', 'controller', 'users'])
-            ->where('company_id', Auth::user()->company_id)
-            ->whereIn('id', $siteIds)
-            ->paginate(25);
-
-
-        // Passer les données à la vue
-        return view('employee.account', [
-            'user' => $user,
-            'sites' => $sites
+        return view('profile.edit', [
+            'user' => $request->user(),
         ]);
     }
 

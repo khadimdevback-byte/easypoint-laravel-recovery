@@ -252,7 +252,7 @@ class ContactController extends Controller
     /**
      * Admin - Liste des messages
      */
-    public function adminIndex()
+    public function adminIndex(Request $request)
     {
         // Vérifier que l'utilisateur est connecté
         if (!auth()->check()) {
@@ -265,10 +265,24 @@ class ContactController extends Controller
             abort(403, 'Accès non autorisé');
         }
 
-        $contacts = Contact::orderBy('created_at', 'desc')->paginate(20);
+        $filters = $request->validate([
+            'status' => 'nullable|in:pending,processing,responded,closed',
+            'sort' => 'nullable|in:asc,desc',
+        ]);
+
+        $contacts = Contact::query()
+            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
+            ->orderBy('created_at', $filters['sort'] ?? 'desc')
+            ->paginate(20)
+            ->withQueryString();
+        $statusCounts = Contact::query()
+            ->select('status')
+            ->selectRaw('COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
         $unreadCount = ContactNotification::where('is_read', false)->count();
 
-        return view('admin.contacts.index', compact('contacts', 'unreadCount'));
+        return view('admin.contacts.index', compact('contacts', 'unreadCount', 'statusCounts'));
     }
 
     /**

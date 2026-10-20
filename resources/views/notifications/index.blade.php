@@ -1,15 +1,20 @@
 <x-app-layout>
 
-    <!-- cards -->
-    <div class="w-full mx-auto">
-
-
-        <div class="md:w-9/12  2xl:w-8/12 mx-auto">
-            <div class="px-6">
-                <h1 class="mb-2 ml-2 mt-5 font-bold text-black text-2xl">
-
-                    {{ __('Toute les notifications') }}
-                    </h6>
+    <div class="w-full mx-auto px-4 py-8">
+        <div class="mx-auto max-w-4xl">
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">{{ __('Mes notifications') }}</h1>
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ $unreadCount }} {{ __('non lue(s)') }}
+                    </p>
+                </div>
+                @if ($unreadCount > 0)
+                    <button type="button" onclick="markAllAsRead()"
+                        class="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-white transition hover:opacity-90">
+                        <i class="fas fa-check-double mr-2"></i>{{ __('Tout marquer comme lu') }}
+                    </button>
+                @endif
             </div>
 
             @if (session('success'))
@@ -36,47 +41,43 @@
                 </div>
             @endif
 
-            <div class="my-10 px-6 py-6 w-7/12 mx-auto">
-                <ul>
-                    
-                    <li class="my-5 text-end">
-                        <button onclick="markAllAsRead()">Marquer tout comme lues</button>
+            <ul class="space-y-3">
+                @forelse ($notifications as $notification)
+                    <li class="rounded-xl border {{ $notification->read_at ? 'border-gray-200 bg-white' : 'border-blue-200 bg-blue-50' }} p-4 shadow-sm">
+                        <a class="flex items-start gap-4 text-gray-800"
+                            href="{{ $notification->data['url'] ?? route('notifications.index') }}">
+                            @if (!empty($notification->data['avatar']))
+                                <img src="{{ asset('storage/' . $notification->data['avatar']) }}"
+                                    alt="" class="h-10 w-10 rounded-full object-cover">
+                            @else
+                                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                                    <i class="fas fa-bell" aria-hidden="true"></i>
+                                </span>
+                            @endif
+                            <span class="min-w-0 flex-1">
+                                <span class="block text-sm font-medium">
+                                    {{ $notification->data['message'] ?? __('Nouvelle notification') }}
+                                </span>
+                                <span class="mt-1 block text-xs text-gray-500">
+                                    <i class="fa fa-clock mr-1" aria-hidden="true"></i>
+                                    {{ $notification->created_at->diffForHumans() }}
+                                </span>
+                            </span>
+                            <span class="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold {{ $notification->read_at ? 'bg-gray-100 text-gray-600' : 'bg-blue-100 text-blue-700' }}">
+                                {{ $notification->read_at ? __('Lue') : __('Non lue') }}
+                            </span>
+                        </a>
                     </li>
-
-                    @if (Auth::user()->unreadNotifications->count() > 0)
-                        @foreach (Auth::user()->unreadNotifications as $notification)
-                            <li class="relative my-2">
-                                <a class="ease-soft py-4 shadow clear-both block w-full whitespace-nowrap rounded-lg bg-transparent px-4 duration-300 hover:bg-gray-200 hover:text-slate-700 lg:transition-colors"
-                                    href="javascript:;">
-                                    <div class="flex py-1">
-                                        <div class="my-auto">
-                                            <img src="{{ asset('storage/' . $notification->data['avatar']) }}"
-                                                class="inline-flex shadow items-center justify-center mr-4 text-white text-sm h-9 w-9 max-w-none rounded-xl" />
-                                        </div>
-                                        <div class="flex flex-col justify-center">
-                                            <h6 class="mb-1 font-normal leading-normal text-sm">
-                                                {{ $notification->data['message'] }}</h6>
-                                            <p class="mb-0 leading-tight text-xs text-slate-400">
-                                                <i class="mr-1 fa fa-clock"></i>
-                                                {{ $notification->created_at->diffForHumans() }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </li>
-                        @endforeach
-                    @else
-                        <div class="text-center p-6 my-auto">
-                            <i class="fa fa-bell-slash text-gray-400 text-5xl mb-4"></i>
-                            <p class="text-gray-600 ">Vous n'avez aucune notification pour le moment.</p>
-                        </div>
-
-                    @endif
-                </ul>
+                @empty
+                    <li class="rounded-xl border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
+                        <i class="fa fa-bell-slash mb-4 text-4xl text-gray-400" aria-hidden="true"></i>
+                        <p class="text-gray-600">{{ __('Vous n’avez aucune notification pour le moment.') }}</p>
+                    </li>
+                @endforelse
+            </ul>
+            <div class="mt-6">
+                {{ $notifications->links() }}
             </div>
         </div>
-
     </div>
-    <!-- end cards -->
-
 </x-app-layout>

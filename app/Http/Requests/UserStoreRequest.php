@@ -29,7 +29,7 @@ class UserStoreRequest extends FormRequest
             // 'name' => 'required|string',
             // 'first_name' => 'nullable|string',
             // 'username' => 'nullable|string|unique:users,username,id',
-            'email' => 'required|string|email|unique:users,email,id',
+            'email' => 'required|string|email|unique:users,email',
             // 'password' => 'nullable|string|min:8|confirmed',
             // 'phone' => 'nullable|string',
             // 'status' => 'required',
