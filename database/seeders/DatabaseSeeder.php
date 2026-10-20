@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
 
         if (app()->environment(['local', 'testing'])) {
             $this->call([
+                StandardPlansSeeder::class,
                 SupportMessageSeeder::class,
                 ContactSeeder::class,
                 NotificationSeeder::class,

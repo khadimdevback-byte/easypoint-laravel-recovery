@@ -245,9 +245,48 @@
         body.sidebar-collapsed #sidenav .w-full > ul > li > a > .fa-chevron-down,
         body.sidebar-collapsed #sidenav h6,
         body.sidebar-collapsed #sidenav .hs-accordion ul,
-        body.sidebar-collapsed #sidenav .sidebar-current-plan,
         body.sidebar-collapsed #sidenav .sidebar-logout-button span {
             display: none !important;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-current-plan {
+            display: flex !important;
+            width: 56px;
+            margin: 8px auto 16px !important;
+            padding: 6px 2px !important;
+            gap: 4px;
+            box-sizing: border-box;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-current-plan > span:first-child {
+            font-size: 7px;
+            line-height: 1.2;
+            margin: 0 !important;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-current-plan > span:nth-child(2) {
+            padding: 4px !important;
+            font-size: 9px;
+            white-space: nowrap;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-plan-name,
+        body.sidebar-collapsed #sidenav .sidebar-upgrade-link span {
+            display: none;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-current-plan .sidebar-upgrade-link {
+            display: flex;
+            width: 36px;
+            height: 30px;
+            align-items: center;
+            justify-content: center;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        body.sidebar-collapsed #sidenav .sidebar-upgrade-link i {
+            margin: 0 !important;
         }
 
         body.sidebar-collapsed #sidenav .w-full > ul > li > a > div {

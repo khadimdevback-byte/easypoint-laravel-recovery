@@ -104,9 +104,9 @@
             </div>
 
             {{-- Plan actuel --}}
-            @if (auth()->check() && in_array(auth()->user()->user_type, ['admin', 'manager']) && auth()->user()->company)
+            @if (auth()->check() && in_array(auth()->user()->user_type, ['admin', 'manager']))
                 @php
-                    $activeSub = auth()->user()->company->activeSubscription;
+                    $activeSub = auth()->user()->company?->activeSubscription;
                     $planName = $activeSub && $activeSub->plan ? $activeSub->plan->name : 'Aucun Plan';
                     $isFree = $activeSub && $activeSub->plan ? (strtolower($activeSub->plan->slug) === 'free' || strtolower($activeSub->plan->name) === 'free') : true;
                 @endphp
@@ -116,13 +116,14 @@
 
                     <span class="px-3 py-1 text-xs font-bold rounded-full {{ $isFree ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-green-100 text-green-800 border border-green-200' }}">
                         <i class="fa-solid {{ $isFree ? 'fa-seedling' : 'fa-gem' }} mr-1"></i>
-                        {{ $planName }}
+                        <span class="sidebar-plan-name">{{ $planName }}</span>
                     </span>
 
                     @if ($isFree)
                         <a href="{{ route('subscriptions.upgrade') }}"
-                           class="mt-2.5 w-full text-center text-[11px] bg-gradient-to-tl from-purple-700 to-pink-500 text-white font-bold py-1.5 px-3 rounded-lg hover:scale-102 transition-all duration-200 shadow-md">
-                            <i class="fa-solid fa-arrow-up-from-bracket mr-1"></i> {{ __('Upgrade Plan') }}
+                           title="{{ __('Upgrade Plan') }}"
+                           class="sidebar-upgrade-link mt-2.5 w-full text-center text-[11px] bg-gradient-to-tl from-purple-700 to-pink-500 text-white font-bold py-1.5 px-3 rounded-lg hover:scale-102 transition-all duration-200 shadow-md">
+                            <i class="fa-solid fa-arrow-up-from-bracket mr-1"></i><span>{{ __('Upgrade Plan') }}</span>
                         </a>
                     @endif
                 </div>

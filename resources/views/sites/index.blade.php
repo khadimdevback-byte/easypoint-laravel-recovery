@@ -74,6 +74,21 @@
                         @forelse($sites as $site)
                             @php
                                 $qrCodeHtml = QrCode::size(200)->generate($site->qr_code);
+                                $addressParts = array_values(array_filter(array_map('trim', explode(',', $site->address ?? ''))));
+                                preg_match('/\b\d{5}\b/u', $site->address ?? '', $postcodeMatch);
+                                $addressCity = null;
+                                foreach ($addressParts as $index => $part) {
+                                    if (preg_match('/\barrondissement\b/iu', $part) && isset($addressParts[$index + 1])) {
+                                        $addressCity = $addressParts[$index + 1];
+                                        break;
+                                    }
+                                }
+                                $shortAddress = $addressParts[0] ?? '-';
+                                if (! empty($postcodeMatch[0])) {
+                                    $shortAddress .= ', '.$postcodeMatch[0].($addressCity ? ' '.$addressCity : '');
+                                } elseif (isset($addressParts[1])) {
+                                    $shortAddress .= ', '.$addressParts[1];
+                                }
                             @endphp
                             <tr id="site-row-{{ $site->id }}">
                                 <td>
@@ -87,7 +102,7 @@
                                     </a>
                                 </td>
                                 <td>{{ $site->customer->name ?? '-' }}</td>
-                                <td>{{ $site->address ?? '-' }}</td>
+                                <td>{{ $shortAddress }}</td>
                                 <td>{{ $site->late_mark_duration ?? '-' }} min</td>
                                 <td>
                                     <span class="status-badge {{ $site->status == 'active' ? 'status-badge--active' : 'status-badge--inactive' }}">

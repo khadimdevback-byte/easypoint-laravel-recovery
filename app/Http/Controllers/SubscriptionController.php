@@ -422,9 +422,9 @@ class SubscriptionController extends Controller
         $activeSub = $company?->activeSubscription;
         $currentPlan = $activeSub?->plan;
 
-        // 🌟 CORRECTION : Ajout de la condition 'is_visible' à true
-        $plans = Plan::where('price', '>', 0)
-            ->where('is_visible', true) // ou 1 selon votre structure
+        $plans = Plan::where('is_active', true)
+            ->where('price', '>', 0)
+            ->orderBy('price')
             ->get();
 
         return view('superadmin.subscriptions.upgrade', compact('plans', 'currentPlan'));
